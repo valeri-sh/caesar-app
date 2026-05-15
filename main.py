@@ -6,11 +6,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 
-# Алфавиты
 RU_ALPHABET = 'абвгдежзийклмнопрстуфхцчшщъыьэюя'
 EN_ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 
-# Частоты букв в русском языке
 RU_FREQ = {
     'о': 10.97, 'а': 8.01, 'и': 7.35, 'е': 7.18, 'н': 6.62,
     'т': 6.26, 'с': 5.47, 'р': 4.73, 'в': 4.68, 'л': 4.35,
@@ -25,7 +23,7 @@ class CaesarCipherApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Шифр Цезаря")
-        self.root.geometry("800x650")
+        self.root.geometry("850x700")
         self.root.resizable(True, True)
         
         self.notebook = ttk.Notebook(root)
@@ -51,8 +49,9 @@ class CaesarCipherApp:
         self.input_text = scrolledtext.ScrolledText(input_frame, height=6, 
                                                     font=('Arial', 11), wrap=tk.WORD)
         self.input_text.pack(fill='both', expand=True)
+        self.create_context_menu(self.input_text)
         
-        settings_frame = ttk.Frame(self.encrypt_frame) 
+        settings_frame = ttk.Frame(self.encrypt_frame)
         settings_frame.pack(fill='x', padx=10, pady=10)
         
         ttk.Label(settings_frame, text="Ключ сдвига:").grid(row=0, column=0, 
@@ -85,11 +84,21 @@ class CaesarCipherApp:
         result_frame = ttk.LabelFrame(self.encrypt_frame, text="Результат", padding=10)
         result_frame.pack(fill='both', expand=True, padx=10, pady=5)
         
-        self.result_text = scrolledtext.ScrolledText(result_frame, height=6, 
-                                                    font=('Arial', 11), wrap=tk.WORD,
-                                                    state='disabled')
-        self.result_text.pack(fill='both', expand=True)
-         
+        result_text_frame = ttk.Frame(result_frame)
+        result_text_frame.pack(fill='both', expand=True)
+        
+        self.result_text = scrolledtext.ScrolledText(result_text_frame, height=6, 
+                                                    font=('Arial', 11), wrap=tk.WORD)
+        self.result_text.pack(side=tk.LEFT, fill='both', expand=True)
+        self.create_context_menu(self.result_text)
+        
+        copy_btn_frame = ttk.Frame(result_text_frame)
+        copy_btn_frame.pack(side=tk.RIGHT, fill='y', padx=5)
+        
+        self.copy_result_btn = ttk.Button(copy_btn_frame, text="📋 Копировать\nрезультат", 
+                                         command=self.copy_result, width=15)
+        self.copy_result_btn.pack(pady=5)
+        
         self.key_info_label = ttk.Label(self.encrypt_frame, text="", 
                                        font=('Arial', 10, 'italic'))
         self.key_info_label.pack(pady=5)
@@ -110,6 +119,7 @@ class CaesarCipherApp:
         self.crack_input = scrolledtext.ScrolledText(input_frame, height=4, 
                                                     font=('Arial', 11), wrap=tk.WORD)
         self.crack_input.pack(fill='both', expand=True)
+        self.create_context_menu(self.crack_input)
         
         self.crack_btn = ttk.Button(self.crack_frame, text="Взломать шифр", 
                                    command=self.crack_cipher, width=30)
@@ -118,11 +128,51 @@ class CaesarCipherApp:
         result_frame = ttk.LabelFrame(self.crack_frame, text="Результат взлома", padding=10)
         result_frame.pack(fill='both', expand=True, padx=10, pady=5)
         
-        self.crack_result = scrolledtext.ScrolledText(result_frame, height=8, 
-                                                     font=('Arial', 11), wrap=tk.WORD,
-                                                     state='disabled')
-        self.crack_result.pack(fill='both', expand=True)
+        result_text_frame = ttk.Frame(result_frame)
+        result_text_frame.pack(fill='both', expand=True)
+        
+        self.crack_result = scrolledtext.ScrolledText(result_text_frame, height=10, 
+                                                     font=('Arial', 11), wrap=tk.WORD)
+        self.crack_result.pack(side=tk.LEFT, fill='both', expand=True)
+        self.create_context_menu(self.crack_result)
+        
+        copy_crack_btn_frame = ttk.Frame(result_text_frame)
+        copy_crack_btn_frame.pack(side=tk.RIGHT, fill='y', padx=5)
+        
+        self.copy_crack_btn = ttk.Button(copy_crack_btn_frame, text="📋 Копировать\nрезультат", 
+                                        command=self.copy_crack_result, width=15)
+        self.copy_crack_btn.pack(pady=5)
 
+    def create_context_menu(self, widget):
+        context_menu = tk.Menu(widget, tearoff=0)
+        context_menu.add_command(label="✂ Вырезать", command=lambda: widget.event_generate('<<Cut>>'))
+        context_menu.add_command(label="📋 Копировать", command=lambda: widget.event_generate('<<Copy>>'))
+        context_menu.add_command(label="📥 Вставить", command=lambda: widget.event_generate('<<Paste>>'))
+        context_menu.add_separator()
+        context_menu.add_command(label="🗑 Удалить всё", command=lambda: widget.delete('1.0', tk.END))
+        context_menu.add_command(label="✅ Выделить всё", command=lambda: widget.tag_add(tk.SEL, '1.0', tk.END))
+        widget.bind('<Button-3>', lambda e: self.show_context_menu(e, context_menu))
+    
+    def show_context_menu(self, event, menu):
+        try:
+            menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            menu.grab_release()
+    
+    def copy_result(self):
+        result = self.result_text.get("1.0", tk.END).strip()
+        if result:
+            self.root.clipboard_clear()
+            self.root.clipboard_append(result)
+            messagebox.showinfo("Копирование", "Результат скопирован в буфер обмена!")
+    
+    def copy_crack_result(self):
+        result = self.crack_result.get("1.0", tk.END).strip()
+        if result:
+            self.root.clipboard_clear()
+            self.root.clipboard_append(result)
+            messagebox.showinfo("Копирование", "Результат взлома скопирован в буфер обмена!")
+    
     def clean_text(self, text):
         text = text.replace('Ё', 'Е').replace('ё', 'е')
         cleaned = ''
@@ -131,12 +181,12 @@ class CaesarCipherApp:
             if char_lower in RU_ALPHABET or char_lower in EN_ALPHABET:
                 cleaned += char_lower
         return cleaned
-
+    
     def shift_char(self, char, key, alphabet):
         index = alphabet.index(char)
         new_index = (index + key) % len(alphabet)
         return alphabet[new_index]
-
+    
     def encrypt(self, text, key):
         text = self.clean_text(text)
         result = ''
@@ -146,7 +196,7 @@ class CaesarCipherApp:
             elif char in EN_ALPHABET:
                 result += self.shift_char(char, key, EN_ALPHABET)
         return result
-
+    
     def decrypt(self, text, key):
         result = ''
         for char in text:
@@ -161,13 +211,13 @@ class CaesarCipherApp:
             else:
                 result += char
         return result
-
+    
     def format_groups(self, text):
         groups = []
         for i in range(0, len(text), 5):
             groups.append(text[i:i+5])
         return ' '.join(groups)
-
+    
     def count_frequencies(self, text):
         counts = {}
         for char in text:
@@ -183,7 +233,7 @@ class CaesarCipherApp:
             frequencies[char] = (count / total) * 100
         
         return frequencies
-
+    
     def validate_key(self, key_input):
         try:
             key = int(key_input)
@@ -191,7 +241,7 @@ class CaesarCipherApp:
             return key, True
         except ValueError:
             return 0, False
-
+    
     def process_text(self):
         text = self.input_text.get("1.0", tk.END).strip()
         
@@ -218,19 +268,17 @@ class CaesarCipherApp:
         self.result_text.config(state='normal')
         self.result_text.delete("1.0", tk.END)
         self.result_text.insert("1.0", formatted)
-        self.result_text.config(state='disabled')
         
         self.key_info_label.config(text=f"Использован ключ: {key}")
-
+    
     def clear_encrypt_tab(self):
         self.input_text.delete("1.0", tk.END)
         self.result_text.config(state='normal')
         self.result_text.delete("1.0", tk.END)
-        self.result_text.config(state='disabled')
         self.key_info_label.config(text="")
         self.key_entry.delete(0, tk.END)
         self.key_entry.insert(0, "3")
-
+    
     def crack_cipher(self):
         text = self.crack_input.get("1.0", tk.END).strip()
         
@@ -286,7 +334,6 @@ class CaesarCipherApp:
         self.crack_result.config(state='normal')
         self.crack_result.delete("1.0", tk.END)
         self.crack_result.insert("1.0", output)
-        self.crack_result.config(state='disabled')
 
 if __name__ == "__main__":
     root = tk.Tk()
