@@ -6,9 +6,11 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 
+# Алфавиты для шифрования
 RU_ALPHABET = 'абвгдежзийклмнопрстуфхцчшщъыьэюя'
 EN_ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 
+# Частоты букв русского языка для частотного анализа
 RU_FREQ = {
     'о': 10.97, 'а': 8.01, 'и': 7.35, 'е': 7.18, 'н': 6.62,
     'т': 6.26, 'с': 5.47, 'р': 4.73, 'в': 4.68, 'л': 4.35,
@@ -26,23 +28,29 @@ class CaesarCipherApp:
         self.root.geometry("850x700")
         self.root.resizable(True, True)
         
+        # Создание вкладок
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(fill='both', expand=True, padx=10, pady=10)
         
+        # Вкладка шифрования/расшифрования
         self.encrypt_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.encrypt_frame, text='Шифрование/Расшифрование')
         
+        # Вкладка взлома шифра
         self.crack_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.crack_frame, text='Взлом шифра')
         
+        # Инициализация интерфейса вкладок
         self.create_encrypt_tab()
         self.create_crack_tab()
 
     def create_encrypt_tab(self):
+        # Заголовок вкладки
         title_label = ttk.Label(self.encrypt_frame, text="Шифр Цезаря", 
                                font=('Arial', 16, 'bold'))
         title_label.pack(pady=10)
         
+        # Поле ввода текста
         input_frame = ttk.LabelFrame(self.encrypt_frame, text="Входной текст", padding=10)
         input_frame.pack(fill='both', expand=True, padx=10, pady=5)
         
@@ -51,6 +59,7 @@ class CaesarCipherApp:
         self.input_text.pack(fill='both', expand=True)
         self.create_context_menu(self.input_text)
         
+        # Настройки шифрования (ключ и режим)
         settings_frame = ttk.Frame(self.encrypt_frame)
         settings_frame.pack(fill='x', padx=10, pady=10)
         
@@ -60,6 +69,7 @@ class CaesarCipherApp:
         self.key_entry.grid(row=0, column=1, padx=5, pady=5, sticky='w')
         self.key_entry.insert(0, "3")
         
+        # Выбор режима работы
         ttk.Label(settings_frame, text="Режим:").grid(row=0, column=2, 
                                                      padx=10, pady=5, sticky='e')
         self.mode_var = tk.StringVar(value="encrypt")
@@ -70,6 +80,7 @@ class CaesarCipherApp:
                        variable=self.mode_var, value="decrypt").grid(row=0, column=4, 
                                                                      padx=5, pady=5)
         
+        # Кнопки управления
         btn_frame = ttk.Frame(self.encrypt_frame)
         btn_frame.pack(pady=10)
         
@@ -81,6 +92,7 @@ class CaesarCipherApp:
                                    command=self.clear_encrypt_tab, width=20)
         self.clear_btn.pack(side=tk.LEFT, padx=5)
         
+        # Поле вывода результата
         result_frame = ttk.LabelFrame(self.encrypt_frame, text="Результат", padding=10)
         result_frame.pack(fill='both', expand=True, padx=10, pady=5)
         
@@ -92,27 +104,32 @@ class CaesarCipherApp:
         self.result_text.pack(side=tk.LEFT, fill='both', expand=True)
         self.create_context_menu(self.result_text)
         
+        # Кнопка копирования результата
         copy_btn_frame = ttk.Frame(result_text_frame)
         copy_btn_frame.pack(side=tk.RIGHT, fill='y', padx=5)
         
-        self.copy_result_btn = ttk.Button(copy_btn_frame, text="📋 Копировать\nрезультат", 
+        self.copy_result_btn = ttk.Button(copy_btn_frame, text="Копировать результат", 
                                          command=self.copy_result, width=15)
         self.copy_result_btn.pack(pady=5)
         
+        # Метка для отображения использованного ключа
         self.key_info_label = ttk.Label(self.encrypt_frame, text="", 
                                        font=('Arial', 10, 'italic'))
         self.key_info_label.pack(pady=5)
 
     def create_crack_tab(self):
+        # Заголовок вкладки взлома
         title_label = ttk.Label(self.crack_frame, text="Взлом шифра Цезаря\n(метод наименьших квадратов)", 
                                font=('Arial', 16, 'bold'))
         title_label.pack(pady=10)
         
+        # Описание метода
         desc_label = ttk.Label(self.crack_frame, 
                               text="Введите зашифрованный русский текст для автоматического взлома",
                               font=('Arial', 10))
         desc_label.pack(pady=5)
         
+        # Поле ввода зашифрованного текста
         input_frame = ttk.LabelFrame(self.crack_frame, text="Зашифрованный текст", padding=10)
         input_frame.pack(fill='both', expand=True, padx=10, pady=5)
         
@@ -121,10 +138,12 @@ class CaesarCipherApp:
         self.crack_input.pack(fill='both', expand=True)
         self.create_context_menu(self.crack_input)
         
+        # Кнопка запуска взлома
         self.crack_btn = ttk.Button(self.crack_frame, text="Взломать шифр", 
                                    command=self.crack_cipher, width=30)
         self.crack_btn.pack(pady=10)
         
+        # Поле вывода результатов взлома
         result_frame = ttk.LabelFrame(self.crack_frame, text="Результат взлома", padding=10)
         result_frame.pack(fill='both', expand=True, padx=10, pady=5)
         
@@ -136,30 +155,34 @@ class CaesarCipherApp:
         self.crack_result.pack(side=tk.LEFT, fill='both', expand=True)
         self.create_context_menu(self.crack_result)
         
+        # Кнопка копирования результата взлома
         copy_crack_btn_frame = ttk.Frame(result_text_frame)
         copy_crack_btn_frame.pack(side=tk.RIGHT, fill='y', padx=5)
         
-        self.copy_crack_btn = ttk.Button(copy_crack_btn_frame, text="📋 Копировать\nрезультат", 
+        self.copy_crack_btn = ttk.Button(copy_crack_btn_frame, text="Копировать результат", 
                                         command=self.copy_crack_result, width=15)
         self.copy_crack_btn.pack(pady=5)
 
     def create_context_menu(self, widget):
+        # Создание контекстного меню для текстовых полей
         context_menu = tk.Menu(widget, tearoff=0)
-        context_menu.add_command(label="✂ Вырезать", command=lambda: widget.event_generate('<<Cut>>'))
-        context_menu.add_command(label="📋 Копировать", command=lambda: widget.event_generate('<<Copy>>'))
-        context_menu.add_command(label="📥 Вставить", command=lambda: widget.event_generate('<<Paste>>'))
+        context_menu.add_command(label="Вырезать", command=lambda: widget.event_generate('<<Cut>>'))
+        context_menu.add_command(label="Копировать", command=lambda: widget.event_generate('<<Copy>>'))
+        context_menu.add_command(label="Вставить", command=lambda: widget.event_generate('<<Paste>>'))
         context_menu.add_separator()
-        context_menu.add_command(label="🗑 Удалить всё", command=lambda: widget.delete('1.0', tk.END))
-        context_menu.add_command(label="✅ Выделить всё", command=lambda: widget.tag_add(tk.SEL, '1.0', tk.END))
+        context_menu.add_command(label="Удалить всё", command=lambda: widget.delete('1.0', tk.END))
+        context_menu.add_command(label="Выделить всё", command=lambda: widget.tag_add(tk.SEL, '1.0', tk.END))
         widget.bind('<Button-3>', lambda e: self.show_context_menu(e, context_menu))
     
     def show_context_menu(self, event, menu):
+        # Отображение контекстного меню
         try:
             menu.tk_popup(event.x_root, event.y_root)
         finally:
             menu.grab_release()
     
     def copy_result(self):
+        # Копирование результата шифрования в буфер обмена
         result = self.result_text.get("1.0", tk.END).strip()
         if result:
             self.root.clipboard_clear()
@@ -167,6 +190,7 @@ class CaesarCipherApp:
             messagebox.showinfo("Копирование", "Результат скопирован в буфер обмена!")
     
     def copy_crack_result(self):
+        # Копирование результата взлома в буфер обмена
         result = self.crack_result.get("1.0", tk.END).strip()
         if result:
             self.root.clipboard_clear()
@@ -174,6 +198,7 @@ class CaesarCipherApp:
             messagebox.showinfo("Копирование", "Результат взлома скопирован в буфер обмена!")
     
     def clean_text(self, text):
+        # Очистка текста: удаление небуквенных символов, замена ё на е
         text = text.replace('Ё', 'Е').replace('ё', 'е')
         cleaned = ''
         for char in text:
@@ -183,11 +208,13 @@ class CaesarCipherApp:
         return cleaned
     
     def shift_char(self, char, key, alphabet):
+        # Сдвиг символа на key позиций в алфавите
         index = alphabet.index(char)
         new_index = (index + key) % len(alphabet)
         return alphabet[new_index]
     
     def encrypt(self, text, key):
+        # Шифрование текста сдвигом вперед на key позиций
         text = self.clean_text(text)
         result = ''
         for char in text:
@@ -198,6 +225,7 @@ class CaesarCipherApp:
         return result
     
     def decrypt(self, text, key):
+        # Расшифрование текста сдвигом назад на key позиций
         result = ''
         for char in text:
             if char in RU_ALPHABET:
@@ -213,12 +241,14 @@ class CaesarCipherApp:
         return result
     
     def format_groups(self, text):
+        # Форматирование текста группами по 5 символов
         groups = []
         for i in range(0, len(text), 5):
             groups.append(text[i:i+5])
         return ' '.join(groups)
     
     def count_frequencies(self, text):
+        # Подсчет частоты встречаемости букв в тексте
         counts = {}
         for char in text:
             if char in RU_ALPHABET:
@@ -235,6 +265,7 @@ class CaesarCipherApp:
         return frequencies
     
     def validate_key(self, key_input):
+        # Проверка корректности ключа (должно быть число)
         try:
             key = int(key_input)
             key = key % 32
@@ -243,6 +274,7 @@ class CaesarCipherApp:
             return 0, False
     
     def process_text(self):
+        # Обработка текста: шифрование или расшифрование
         text = self.input_text.get("1.0", tk.END).strip()
         
         if not text:
@@ -272,6 +304,7 @@ class CaesarCipherApp:
         self.key_info_label.config(text=f"Использован ключ: {key}")
     
     def clear_encrypt_tab(self):
+        # Очистка всех полей вкладки шифрования
         self.input_text.delete("1.0", tk.END)
         self.result_text.config(state='normal')
         self.result_text.delete("1.0", tk.END)
@@ -280,6 +313,7 @@ class CaesarCipherApp:
         self.key_entry.insert(0, "3")
     
     def crack_cipher(self):
+        # Взлом шифра методом частотного анализа
         text = self.crack_input.get("1.0", tk.END).strip()
         
         if not text:
@@ -296,10 +330,12 @@ class CaesarCipherApp:
         min_error = float('inf')
         results = []
         
+        # Перебор всех возможных ключей
         for key in range(32):
             decrypted = self.decrypt(cleaned, key)
             freq = self.count_frequencies(decrypted)
             
+            # Расчет ошибки методом наименьших квадратов
             error = 0
             for char in RU_ALPHABET:
                 actual_freq = freq.get(char, 0)
@@ -312,6 +348,7 @@ class CaesarCipherApp:
                 min_error = error
                 best_key = key
         
+        # Формирование результата с лучшим ключом
         best_decrypted = self.decrypt(cleaned, best_key)
         formatted = self.format_groups(best_decrypted)
         
@@ -319,16 +356,17 @@ class CaesarCipherApp:
         output += f"{'Ключ':<8}{'Ошибка':<15}{'Текст (начало)':<40}\n"
         output += "-" * 65 + "\n"
         
+        # Сортировка результатов по возрастанию ошибки
         sorted_results = sorted(results, key=lambda x: x[1])[:5]
         for key, error, preview in sorted_results:
-            marker = " ← ЛУЧШИЙ" if key == best_key else ""
+            marker = " <- ЛУЧШИЙ" if key == best_key else ""
             output += f"{key:<8}{error:<15.2f}{preview:<40}{marker}\n"
         
         output += "\n" + "=" * 65 + "\n"
-        output += f"\n✓ НАЙДЕН ЛУЧШИЙ КЛЮЧ: {best_key}\n\n"
-        output += "✓ РАСШИФРОВАННЫЙ ТЕКСТ (группами по 5):\n"
+        output += f"\nНАЙДЕН ЛУЧШИЙ КЛЮЧ: {best_key}\n\n"
+        output += "РАСШИФРОВАННЫЙ ТЕКСТ (группами по 5):\n"
         output += formatted + "\n\n"
-        output += "✓ ПОЛНЫЙ ТЕКСТ:\n"
+        output += "ПОЛНЫЙ ТЕКСТ:\n"
         output += best_decrypted
         
         self.crack_result.config(state='normal')
